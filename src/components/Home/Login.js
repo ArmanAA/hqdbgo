@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-var passwordHash = require("password-hash");
+import { Redirect } from "react-router-dom";
 const divStyle = {
   textAlign: "center", // <-- the magic
   fontWeight: "bold",
@@ -12,9 +12,21 @@ class Login extends Component {
     this.state = {
       username: "",
       password: "",
-      hashPass: ""
+      redirect: false,
+      show: false
     };
   }
+  setRedirect = () => {
+    this.setState({
+      redirect: true
+    });
+  };
+  renderRedirect = () => {
+    if (this.state.redirect) {
+      let url = "/game/" + this.state.username;
+      return <Redirect to={url} />;
+    }
+  };
   change = e => {
     e.preventDefault();
     //this.props.onChange({ [e.target.name]: e.target.value });
@@ -25,23 +37,22 @@ class Login extends Component {
 
   onSubmit = e => {
     e.preventDefault();
-    // this.setState({ loginFields: fields });
-
-    var hashedPassword = passwordHash.generate(this.state.password);
-    this.setState({ hashPass: hashedPassword });
 
     fetch("http://localhost:8080/api/login", {
-      method: "POST",
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(this.state)
     })
-      .then(res => console.log(res.json()))
+      .then(res => {
+        console.log(res.status);
+        this.setRedirect();
+      })
       .catch(error => console.log(error));
-    //alert(this.state.fields.username);
   };
 
-  // console.log(this.state);
   render() {
+    // let url = new URL(window.location.href);
+    //alert(url);
     return (
       <div>
         <h1>Log In Here!</h1>
@@ -62,6 +73,7 @@ class Login extends Component {
           />
           <button onClick={e => this.onSubmit(e)}>Log In</button>
         </form>
+        {this.renderRedirect()}
       </div>
     );
   }

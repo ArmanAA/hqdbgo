@@ -30,7 +30,6 @@ class Signup extends Component {
       username: "",
       password: "",
       repassword: "",
-      hashPass: "",
       status: "",
       show: false,
       message: ""
@@ -69,21 +68,7 @@ class Signup extends Component {
         });
         this.handleShow();
         return false;
-      } else if (this.state.password === this.state.repassword) {
-        var hashedPassword = passwordHash.generate(this.state.password);
-        this.setState({ hashPass: hashedPassword });
       }
-      // if (
-      //   /^[a-zA-Z]+$/.test(this.state.firstName) &&
-      //   /^[a-zA-Z]+$/.test(this.state.lastName)
-      // ) {
-      // } else {
-      //   this.setState({
-      //     message: "Please only use letters for your first and last name"
-      //   });
-      //   this.handleShow();
-      //   return false;
-      // }
     } else {
       this.setState({
         message: "Please complete all fields shown on the sign up form."
@@ -93,6 +78,7 @@ class Signup extends Component {
     }
     return true;
   };
+
   onSubmit = e => {
     e.preventDefault();
     console.log(this.state);
@@ -110,8 +96,6 @@ class Signup extends Component {
                 message: "The user name you have entered is already in use."
               });
               this.setState({ show: true });
-              //alert(this.state.status);
-              // this.componentWillUpdate();
             }
             console.log("Failure: ", JSON.stringify(res.status));
           } else {
@@ -128,17 +112,6 @@ class Signup extends Component {
   handleShow() {
     this.setState({ show: true });
   }
-  // componentDidMount() {
-  //   if (this.state.status) {
-  //     alert(this.state.status);
-  //   }
-  // }
-  componentWillUpdate() {
-    // if (this.state.show) {
-    //   this.setState({ show: false });
-    // }
-  }
-  HashPassword = str => {};
   render() {
     return (
       <div>
@@ -148,14 +121,6 @@ class Signup extends Component {
             onClose={this.handleClose}
             message={this.state.message}
           />
-          {/* <Modal
-            style={customStyles}
-            show={this.state.show}
-            onHide={this.handleHide}
-            container={this}
-          >
-            <div>I'm a Modal </div>
-          </Modal> */}
         </div>
         <div className={styles.simple}>
           <h1>Sign Up Here!</h1>

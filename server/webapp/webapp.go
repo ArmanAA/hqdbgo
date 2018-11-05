@@ -2,66 +2,61 @@ package webapp
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"reactDevGo/my-app/server/myDB"
 	"reactDevGo/my-app/server/mySocket"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Person struct {
 	Name string
 	Age  int
 }
-
-type Record struct {
-	Id   int       `json:"id"`
-	Name string    `json:"name"`
-	Time time.Time `json:"time"`
+type loginData struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func StartServer(db gorm.DB) {
 	// Set the router as the default one shipped
 
-	t := time.Now()
-	rec := Record{1, "Arman", t}
-
 	router := gin.Default()
 	router.Use(cors.Default())
 	api := router.Group("/api")
-	// {
-	api.GET("/data", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"data": rec,
-		})
-	})
-	// })
+
 	api.GET("/ws", func(c *gin.Context) {
 
 		mySocket.WsHandler(c)
 
 	})
-	api.POST("/login", func(c *gin.Context) {
+	api.PUT("/login", func(c *gin.Context) {
 		var json loginData
 		if err := c.BindJSON(&json); err == nil {
+			if myDB.CheckCredentials(json.Username, json.Password, db) {
+				c.JSON(http.StatusAccepted, json)
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{})
+			}
 
-			c.JSON(http.StatusCreated, json)
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{})
 		}
-		fmt.Println("params from post: ", json)
-
-		//mySocket.WsHandler(c)
 
 	})
 	api.POST("/signup", func(c *gin.Context) {
 		var json *myDB.User = new(myDB.User)
 		if err := c.BindJSON(&json); err == nil {
-			//obj := *json
 			if myDB.CheckUsername(json.Username, db) {
+				hash, err := bcrypt.GenerateFromPassword([]byte(json.Password), bcrypt.DefaultCost)
+				if err != nil {
+					log.Fatal(err)
+				}
+				json.Password = string(hash)
 				myDB.CreateUser(json, db)
 				c.JSON(http.StatusCreated, json)
 			} else {
@@ -71,7 +66,7 @@ func StartServer(db gorm.DB) {
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{})
 		}
-		//fmt.Println("params from post: ", *json)
+		fmt.Println("params from post: ", *json)
 
 	})
 
@@ -79,9 +74,4 @@ func StartServer(db gorm.DB) {
 	defer db.Close()
 	router.Run(":8080")
 	//}
-}
-
-type loginData struct {
-	Username string `json:"username"`
-	Password string `json:"hashPass"`
 }

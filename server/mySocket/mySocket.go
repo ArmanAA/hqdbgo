@@ -23,13 +23,13 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-var clients = make(map[*websocket.Conn]bool)
-var broadcast = make(chan []byte)
-
 type Message struct {
 	Username string `json:"username"`
 	Message  string `json:"message"`
 }
+
+var clients = make(map[*websocket.Conn]bool)
+var broadcast = make(chan Message)
 
 func WsHandler(c *gin.Context) {
 	w := c.Writer
@@ -46,16 +46,17 @@ func WsHandler(c *gin.Context) {
 	clients[conn] = true
 	fmt.Println("Client subscribed")
 
-	HandleMessages(conn)
+	go HandleConnections(conn)
+
+	go HandleMessages()
 
 	defer conn.Close()
 }
 
-func HandleMessages(conn *websocket.Conn) {
+func HandleConnections(conn *websocket.Conn) {
 	for {
-		// var msg string
+		var msg Message
 		// fmt.Println(msg)
-		var msg string
 
 		err := conn.ReadJSON(&msg)
 		//fmt.Println(msg)
@@ -68,23 +69,26 @@ func HandleMessages(conn *websocket.Conn) {
 			break
 		}
 		// fmt.Println("BEFORE broadcasted ")
-		// broadcast <- msg
+		broadcast <- msg
 		// fmt.Println("it was broadcasted ")
 
 		//Send it out to every client that is currently connected
 
-		for client := range clients {
-			//m, _ := json.Marshal(msg)
-			// s := string(msg)
-			// fmt.Println(s)
+	}
+}
+func HandleMessages() {
+	msg := <-broadcast
+	for client := range clients {
+		//m, _ := json.Marshal(msg)
+		// s := string(msg)
+		// fmt.Println(s)
 
-			err := client.WriteJSON(msg)
-			if err != nil {
-				log.Printf("error: %w", err)
-				client.Close()
-				delete(clients, client)
-				fmt.Println("client deleted")
-			}
+		err := client.WriteJSON(msg)
+		if err != nil {
+			log.Printf("error: %w", err)
+			client.Close()
+			delete(clients, client)
+			fmt.Println("client deleted")
 		}
 	}
 }
