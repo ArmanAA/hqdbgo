@@ -57,8 +57,8 @@ func InitializeDB() gorm.DB {
 	}
 
 	err = db.DB().Ping()
-	db.DropTableIfExists(&User{})
-	db.CreateTable(&User{})
+	//	db.DropTableIfExists(&User{})
+	db.AutoMigrate(&User{})
 
 	//defer db.Close()
 	return *db
