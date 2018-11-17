@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"reactDevGo/my-app/server/myDB"
+	"reactDevGo/my-app/server/mySocket"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -51,25 +52,14 @@ func StartServer(db gorm.DB) {
 	// Set the router as the default one shipped
 	initKeys()
 	router := gin.Default()
-	// router.Use(cors.Default())
-	router.Use(cors.New(cors.Config{
-		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "User-Agent", "Referrer", "Host", "Token"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		AllowAllOrigins:  false,
-		AllowOriginFunc:  func(origin string) bool { return true },
-		MaxAge:           86400,
-	}))
+	router.Use(cors.Default())
 
 	api := router.Group("/api")
-
+	go mySocket.HandleMessages()
 	api.GET("/game/:username", func(c *gin.Context) {
 
 		var cookie, _ = c.Request.Cookie("token")
 		var cookievalue = cookie.Value
-
-		fmt.Println("Cookie value is:" + cookievalue)
 
 		token, err := jwt.Parse(cookievalue, func(t *jwt.Token) (interface{}, error) {
 			return SignKey, nil
@@ -81,8 +71,13 @@ func StartServer(db gorm.DB) {
 			fmt.Println(err)
 			c.JSON(http.StatusUnauthorized, gin.H{})
 		}
-		//mySocket.WsHandler(c)
 
+	})
+	api.GET("/websocket/:username", func(c *gin.Context) {
+		fmt.Println("IN SOCKET")
+		mySocket.HandleConnections(c)
+
+		fmt.Println("socket initialized")
 	})
 	api.POST("/login", func(c *gin.Context) {
 		var json loginData
@@ -93,14 +88,14 @@ func StartServer(db gorm.DB) {
 
 				token := jwt.New(jwt.SigningMethodHS256)
 				claims := make(jwt.MapClaims)
-				claims["exp"] = time.Now().Add(time.Second * 5).Unix()
+				claims["exp"] = time.Now().Add(time.Hour * 5).Unix()
 				claims["iat"] = time.Now().Unix()
 				claims["iss"] = "admin"
 
 				token.Claims = claims
 
 				tokenString, err := token.SignedString(SignKey)
-				fmt.Println(tokenString)
+
 				// Set user as authenticated
 				if err != nil {
 					c.JSON(http.StatusInternalServerError, gin.H{})

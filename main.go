@@ -8,5 +8,6 @@ import (
 func main() {
 	db := myDB.InitializeDB()
 	api.StartServer(db)
+	//go mySocket.HandleMessages()
 
 }
