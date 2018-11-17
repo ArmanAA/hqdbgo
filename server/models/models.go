@@ -1,4 +1,4 @@
-package myDB
+package models
 
 import (
 	"github.com/jinzhu/gorm"
@@ -6,6 +6,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+//initialize database connection
 func InitializeDB() gorm.DB {
 
 	db, err := gorm.Open("sqlite3", "./gorm.db")
