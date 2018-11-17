@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"reactDevGo/my-app/server/myDB"
+	"reactDevGo/my-app/server/models"
 	"reactDevGo/my-app/server/mySocket"
 
 	"github.com/gin-contrib/cors"
@@ -37,7 +37,7 @@ func StartServer(db gorm.DB) {
 	api.PUT("/login", func(c *gin.Context) {
 		var json loginData
 		if err := c.BindJSON(&json); err == nil {
-			if myDB.CheckCredentials(json.Username, json.Password, db) {
+			if models.CheckCredentials(json.Username, json.Password, db) {
 				c.JSON(http.StatusAccepted, json)
 			} else {
 				c.JSON(http.StatusUnauthorized, gin.H{})
@@ -49,15 +49,15 @@ func StartServer(db gorm.DB) {
 
 	})
 	api.POST("/signup", func(c *gin.Context) {
-		var json *myDB.User = new(myDB.User)
+		var json *models.User = new(models.User)
 		if err := c.BindJSON(&json); err == nil {
-			if myDB.CheckUsername(json.Username, db) {
+			if models.CheckDuplicateUsername(json.Username, db) {
 				hash, err := bcrypt.GenerateFromPassword([]byte(json.Password), bcrypt.DefaultCost)
 				if err != nil {
 					log.Fatal(err)
 				}
 				json.Password = string(hash)
-				myDB.CreateUser(json, db)
+				models.CreateUser(json, db)
 				c.JSON(http.StatusCreated, json)
 			} else {
 				c.JSON(http.StatusNotAcceptable, gin.H{})
