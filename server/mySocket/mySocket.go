@@ -31,64 +31,56 @@ type Message struct {
 var clients = make(map[*websocket.Conn]bool)
 var broadcast = make(chan Message)
 
-func WsHandler(c *gin.Context) {
+func HandleConnections(c *gin.Context) {
 	w := c.Writer
 	r := c.Request
-	//fmt.Println("in handle connections")
-
-	var conn, err = upgrader.Upgrade(w, r, nil)
-
+	// Upgrade initial GET request to a websocket
+	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-
 		log.Fatal(err)
 	}
+	// Make sure we close the connection when the function returns
+	defer ws.Close()
 
-	clients[conn] = true
-	fmt.Println("Client subscribed")
-
-	go HandleConnections(conn)
-
-	go HandleMessages()
-
-	defer conn.Close()
-}
-
-func HandleConnections(conn *websocket.Conn) {
+	// Register our new client
+	clients[ws] = true
+	fmt.Println("Client Subbed")
 	for {
+		fmt.Println("IN LOOP")
 		var msg Message
-		// fmt.Println(msg)
-
-		err := conn.ReadJSON(&msg)
-		//fmt.Println(msg)
-
-		//fmt.Println(mType, msg)
+		// Read in a new message as JSON and map it to a Message object
+		err := ws.ReadJSON(&msg)
+		fmt.Println("Message READ:", msg.Message)
 		if err != nil {
-			log.Printf("error: %w", err)
-			delete(clients, conn)
-			fmt.Println("client deleted")
+			log.Printf("error: %v", err)
+			delete(clients, ws)
 			break
 		}
-		// fmt.Println("BEFORE broadcasted ")
+		//	fmt.Println("Message READ:")
+
+		// Send the newly received message to the broadcast channel
 		broadcast <- msg
-		// fmt.Println("it was broadcasted ")
-
-		//Send it out to every client that is currently connected
-
+		// amsg := <-broadcast
+		fmt.Println("asdasdasd")
 	}
-}
-func HandleMessages() {
-	msg := <-broadcast
-	for client := range clients {
-		//m, _ := json.Marshal(msg)
-		// s := string(msg)
-		// fmt.Println(s)
 
-		err := client.WriteJSON(msg)
-		if err != nil {
-			log.Printf("error: %w", err)
-			client.Close()
-			delete(clients, client)
-			fmt.Println("client deleted")
+}
+
+func HandleMessages() {
+	//msg := <-broadcast
+	fmt.Println("In wrote message (Handle Message)")
+	for {
+		// Grab the next message from the broadcast channel
+		msg := <-broadcast
+		// Send it out to every client that is currently connected
+		for client := range clients {
+			err := client.WriteJSON(msg)
+			if err != nil {
+				log.Printf("error: %v", err)
+				client.Close()
+				delete(clients, client)
+			}
 		}
 	}
+	fmt.Println("in Handle")
 }
