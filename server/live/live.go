@@ -1,4 +1,4 @@
-package mySocket
+package live
 
 import (
 	"fmt"

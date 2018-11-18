@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"reactDevGo/my-app/server/live"
 	"reactDevGo/my-app/server/models"
-	"reactDevGo/my-app/server/mySocket"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -55,7 +55,7 @@ func StartServer(db gorm.DB) {
 	router.Use(cors.Default())
 
 	api := router.Group("/api")
-	go mySocket.HandleMessages()
+	go live.HandleMessages()
 	api.GET("/game/:username", func(c *gin.Context) {
 
 		var cookie, _ = c.Request.Cookie("token")
@@ -75,7 +75,7 @@ func StartServer(db gorm.DB) {
 	})
 	api.GET("/websocket/:username", func(c *gin.Context) {
 		fmt.Println("IN SOCKET")
-		mySocket.HandleConnections(c)
+		live.HandleConnections(c)
 
 		fmt.Println("socket initialized")
 	})
