@@ -63,7 +63,7 @@ class Game extends Component {
 
           ws.onmessage = function(evt) {
             // alert(evt.data);
-            alert(evt.data);
+
             self.setState(state =>
               state.chatHistroy.push(JSON.parse(evt.data))
             );
