@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+
 import { Redirect } from "react-router-dom";
 const divStyle = {
   textAlign: "center", // <-- the magic
@@ -39,13 +40,16 @@ class Login extends Component {
     e.preventDefault();
 
     fetch("http://localhost:8080/api/login", {
-      method: "PUT",
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(this.state)
     })
+      .then(res => res.json())
       .then(res => {
-        console.log(res.status);
+        console.log(res);
+        //console.log(res.status);
         this.setRedirect();
+        document.cookie = "token=" + res.token;
       })
       .catch(error => console.log(error));
   };

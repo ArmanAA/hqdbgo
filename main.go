@@ -1,12 +1,11 @@
 package main
 
 import (
-	"reactDevGo/my-app/server/myDB"
-	"reactDevGo/my-app/server/webapp"
+	"reactDevGo/my-app/server/api"
+	"reactDevGo/my-app/server/models"
 )
 
 func main() {
-	db := myDB.InitializeDB()
-	webapp.StartServer(db)
-
+	db := models.InitializeDB()
+	api.StartServer(db)
 }
