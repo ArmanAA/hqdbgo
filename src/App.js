@@ -1,13 +1,20 @@
 import React, { Component } from "react";
-import { hot } from "react-hot-loader";
-class App extends Component {
+import ReactDOM from "react-dom";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
+import Home from "./components/Home/Home";
+
+import Game from "./components/Game/Game";
+//import registerServiceWorker from './registerServiceWorker';
+
+export default class App extends Component {
   render() {
     return (
-      <div className="App">
-        <h1> Hello, World! </h1>
-      </div>
+      <BrowserRouter>
+        <Switch>
+          <Route exact path="/" component={Home} />
+          <Route path="/game/:id" component={Game} />
+        </Switch>
+      </BrowserRouter>
     );
   }
 }
-
-export default hot(module)(App);
