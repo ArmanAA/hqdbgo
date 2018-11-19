@@ -11,7 +11,7 @@ import (
 
 var questions = []models.Question{
 	models.Question{Description: "What is 2*2?"},
-	models.Question{Description: "Who is the president of USA"}}
+	models.Question{Description: "Who is the president of USA?"}}
 
 var answers = []models.Answer{
 	models.Answer{Description: "4", QuestionID: 1},

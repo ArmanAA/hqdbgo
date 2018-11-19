@@ -8,7 +8,6 @@ import (
 
 func main() {
 	db := models.InitializeDB()
-	// seeder.CreateSeedTables(db)
 	seeder.SeedQuestions(db)
 	seeder.SeedAnswers(db)
 	api.StartServer(db)
