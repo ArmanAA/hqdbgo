@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import Login from "./Login";
-import Signup from "./Signup";
+// import Login from "./Login";
+// import Signup from "./Signup";
 
 class Home extends Component {
   constructor(props) {
@@ -16,8 +16,8 @@ class Home extends Component {
     return (
       <div>
         <h1> Welcome To Live Trivia!</h1>
-        <Login />
-        <Signup />
+        {/* <Login /> */}
+        {/* <Signup /> */}
       </div>
     );
   }
