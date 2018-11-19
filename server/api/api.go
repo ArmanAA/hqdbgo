@@ -35,7 +35,7 @@ func initKeys() {
 	var err error
 
 	SignKey, err = ioutil.ReadFile(privateKeyPath)
-	fmt.Printf(string(SignKey))
+
 	if err != nil {
 		log.Fatal("Error reading Private Key")
 		return
