@@ -1,12 +1,14 @@
 package main
 
 import (
-	"reactDevGo/my-app/server/myDB"
-	"reactDevGo/my-app/server/webapp"
+	"reactDevGo/my-app/server/api"
+	"reactDevGo/my-app/server/models"
+	"reactDevGo/my-app/server/seeder"
 )
 
 func main() {
-	db := myDB.InitializeDB()
-	webapp.StartServer(db)
-
+	db := models.InitializeDB()
+	seeder.SeedQuestions(db)
+	seeder.SeedAnswers(db)
+	api.StartServer(db)
 }
