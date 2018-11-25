@@ -1,16 +1,17 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
+import { connect } from "react-redux";
 class Game extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      username: this.props.match.params.id,
-      redirect: false,
-      message: "",
-      chatHistroy: [],
-      ws: ""
-    };
-  }
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     username: this.props.match.params.id,
+  //     redirect: false,
+  //     message: "",
+  //     chatHistroy: [],
+  //     ws: ""
+  //   };
+  // }
   change = e => {
     // e.preventDefault();
     this.setState({
@@ -67,9 +68,6 @@ class Game extends Component {
             self.setState(state =>
               state.chatHistroy.push(JSON.parse(evt.data))
             );
-
-            // var myTextArea = document.getElementById("textarea1");
-            //myTextArea.value = myTextArea.value + "\n" + evt.data;
           };
         }
       })
@@ -84,13 +82,15 @@ class Game extends Component {
         JSON.stringify({
           username: this.state.username,
           message: this.state.message
-        })
+        }),
+        this.props.addMessage()
       );
       // alert("sent!");
     }
 
     //   this.setState({ message: "" });
   };
+
   render() {
     console.log(this.state);
     return (
@@ -119,5 +119,16 @@ class Game extends Component {
     );
   }
 }
-
-export default Game;
+const mapStateToProps = state => {
+  return {
+    username: state.chats.username,
+    redirect: state.chats.redirect,
+    message: state.chats.message,
+    chatHistroy: state.chats.chatHistroy,
+    ws: state.chats.ws
+  };
+};
+export default connect(
+  mapStateToProps,
+  { addMessage }
+)(Game);
